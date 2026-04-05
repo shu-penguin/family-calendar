@@ -50,8 +50,8 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:1
 .cell.copy-sel{border-color:var(--accent);border-width:2px;background:var(--al);box-shadow:0 0 0 2px var(--accent);}
 .cell-date{font-size:.67rem;font-weight:700;margin-bottom:1px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
 .cell.today .cell-date{background:var(--accent);color:#fff;}
-.holiday-name{font-size:.48rem;color:#e05a5a;opacity:.7;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;font-weight:600;}
-.event-name{font-size:.48rem;color:#999;opacity:.85;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;font-weight:500;}
+.holiday-name{font-size:.48rem;color:#e05a5a;opacity:.7;line-height:1.1;white-space:nowrap;overflow:visible;margin-bottom:1px;font-weight:600;}
+.event-name{font-size:.48rem;color:#999;opacity:.85;line-height:1.1;white-space:nowrap;overflow:visible;margin-bottom:1px;font-weight:500;}
 .event-chip{font-weight:700;border-radius:3px;padding:1px 2px;margin-bottom:1px;cursor:pointer;display:block;max-width:100%;overflow:hidden;line-height:1.2;}
 .chip-title{display:block;line-height:1.2;font-weight:700;word-break:break-all;}
 .chip-title.short{white-space:nowrap;overflow:hidden;word-break:normal;}
@@ -358,12 +358,12 @@ var EVENTS={
   // バレンタイン・ホワイトデー（毎年固定）
   'MM-02-14':'\u30D0\u30EC\u30F3\u30BF\u30A4\u30F3',
   'MM-03-14':'\u30DB\u30EF\u30A4\u30C8\u30C7\u30FC',
-  'MM-03-03':'\u30D2\u30CA\u30DE\u30C4\u308A',
+  'MM-03-03':'\u3072\u306a\u307e\u3064\u308a',
   'MM-07-07':'\u305F\u306A\u3070\u305F',
   'MM-10-31':'\u30CF\u30ED\u30A6\u30A3\u30F3',
   'MM-12-24':'\u30AF\u30EA\u30B9\u30DE\u30B9\u30A4\u30D6',
   'MM-12-25':'\u30AF\u30EA\u30B9\u30DE\u30B9',
-  'MM-12-31':'\u5927\u6653',
+  'MM-12-31':'\u5927\u6666\u65E5',
   // 母の日（5月第2日曜）
   '2025-05-11':'\u6BCD\u306E\u65E5','2026-05-10':'\u6BCD\u306E\u65E5','2027-05-09':'\u6BCD\u306E\u65E5',
   '2028-05-14':'\u6BCD\u306E\u65E5','2029-05-13':'\u6BCD\u306E\u65E5','2030-05-12':'\u6BCD\u306E\u65E5',
