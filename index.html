@@ -782,4 +782,8 @@ loadMembers();
 lsLoad();
 fbFetch();
 fbPollTimer=setInterval(fbFetch,30000);
-document.addEventListener('visibilitychange',function(){if(!document.hidd
+document.addEventListener('visibilitychange',function(){if(!document.hidden)fbFetch();});
+
+</script>
+</body>
+</html>
