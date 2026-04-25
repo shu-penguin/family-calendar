@@ -313,6 +313,11 @@ lg.appendChild(el);
 }
 }
 
+window.onerror=function(msg,src,line,col,err){
+var el=document.getElementById(‘sMSg’);
+if(el){el.textContent=‘JS ERR:’+msg+’ L’+line;el.className=‘show’;}
+return false;
+};
 function render(){
 renderLegend();
 document.getElementById(‘mLbl’).textContent=curY+’\u5E74’+MN[curM];
@@ -694,12 +699,17 @@ document.getElementById(‘iosX’).onclick=function(){document.getElementById(�
 
 // Init
 loadMembers();
+try{
 initUser();
 lsLoad();
 fbFetch();
 setInterval(fbFetch,30000);
 setInterval(chkUnread,60000);
 document.addEventListener(‘visibilitychange’,function(){if(!document.hidden){fbFetch();chkUnread();}});
+}catch(e){
+document.getElementById(‘sMSg’).textContent=‘ERR:’+e.message;
+document.getElementById(‘sMSg’).className=‘show’;
+}
 
 </script>
 </body>
