@@ -31,10 +31,14 @@ header{background:var(--s);border-bottom:2px solid var(--b);padding:10px 12px;di
 .legend-item{display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;}
 .dot{width:8px;height:8px;border-radius:50%;}
 #cWrap{padding:6px;overflow-x:hidden;touch-action:pan-y;}
-#cGrid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:auto;gap:3px;align-items:stretch;width:100%;min-width:0;}
+#cGrid{display:flex;flex-direction:column;gap:3px;width:100%;min-width:0;}
+.dhrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .dh{text-align:center;font-size:.70rem;font-weight:700;color:var(--tm);padding:2px 0 4px;min-width:0;}
 .dh.sun{color:#e05a5a;}.dh.sat{color:#5b8dee;}
 .cell{background:var(--s);border:1.5px solid var(--b);border-radius:7px;padding:3px 2px 2px;cursor:pointer;position:relative;min-width:0;overflow:hidden;min-height:60px;}
+.wrow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;position:relative;}
+.mchip{position:absolute;z-index:5;border-radius:4px;padding:2px 4px;font-weight:700;font-size:.60rem;cursor:pointer;white-space:nowrap;overflow:hidden;top:22px;height:18px;display:flex;align-items:center;pointer-events:auto;}
+@media(min-width:480px){.mchip{font-size:.68rem;height:20px;top:26px;}}
 .cell:active{background:var(--al);}
 .oth{opacity:.35;background:transparent;border-color:transparent;}
 .nxt{opacity:.55;background:var(--bg);border-color:var(--b);}
@@ -48,7 +52,7 @@ header{background:var(--s);border-bottom:2px solid var(--b);padding:10px 12px;di
 .ct{display:block;line-height:1.2;font-weight:700;word-break:break-all;}
 .ct.s{white-space:nowrap;overflow:hidden;word-break:normal;}
 .ctm{display:block;opacity:.8;white-space:nowrap;font-weight:500;line-height:1.15;}
-@media(min-width:480px){#cWrap{padding:14px;}#cGrid{gap:4px;}.cell{border-radius:12px;padding:6px 5px 5px;min-height:80px;}.cd{font-size:.8rem;width:22px;height:22px;margin-bottom:3px;}.dh{font-size:.78rem;padding:4px 0 6px;}.chip{border-radius:5px;padding:2px 4px;margin-bottom:2px;}.hn,.en{font-size:.58rem;}}
+@media(min-width:480px){#cWrap{padding:14px;}#cGrid{gap:4px;}.wrow{gap:4px;}.dhrow{gap:4px;}.cell{border-radius:12px;padding:6px 5px 5px;min-height:80px;}.cd{font-size:.8rem;width:22px;height:22px;margin-bottom:3px;}.dh{font-size:.78rem;padding:4px 0 6px;}.chip{border-radius:5px;padding:2px 4px;margin-bottom:2px;}.hn,.en{font-size:.58rem;}}
 .fab{position:fixed;bottom:calc(16px + var(--sb));right:16px;z-index:150;width:56px;height:56px;border-radius:50%;background:var(--ac);color:#fff;border:none;font-size:1.7rem;cursor:pointer;box-shadow:0 4px 18px rgba(232,114,74,.45);display:flex;align-items:center;justify-content:center;}
 .fab:active{transform:scale(.9);}
 #upWrap{padding:0 8px 8px;}
@@ -198,7 +202,14 @@ header{background:var(--s);border-bottom:2px solid var(--b);padding:10px 12px;di
     <div class="mh"></div>
     <h2 id="mTitle"></h2>
     <div class="fg"><label>&#x30BF;&#x30A4;&#x30C8;&#x30EB;</label><input type="text" id="fTit" placeholder="&#x4F8B;&#xFF09;&#x4FDD;&#x80B2;&#x56E3;&#x306E;&#x767A;&#x8868;&#x4F1A;"></div>
-    <div class="fg"><label>&#x65E5;&#x4ED8;</label><input type="date" id="fDt"></div>
+    <div class="fg"><label>&#x65E5;&#x4ED8;</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="date" id="fDt" style="flex:1">
+        <span style="color:var(--tm);white-space:nowrap;font-size:.82rem">&#xFF5E;</span>
+        <input type="date" id="fDtEnd" style="flex:1">
+      </div>
+      <div style="font-size:.72rem;color:var(--tm);margin-top:3px">&#x7D42;&#x4E86;&#x65E5;&#x306F;&#x8907;&#x6570;&#x65E5;&#x306E;&#x5834;&#x5408;&#x306E;&#x307F;&#x5165;&#x529B;</div>
+    </div>
     <div class="fg"><label>&#x6642;&#x9593;&#xFF08;&#x4EFB;&#x610F;&#xFF09;</label>
       <div style="display:flex;align-items:center;gap:8px">
         <input type="text" id="fTs" placeholder="9:00" style="flex:1" inputmode="numeric">
@@ -336,60 +347,147 @@ function render(){
   var nmo=curM===11?0:curM+1,nyr=curM===11?curY+1:curY;
   var vn=getVis(nyr,nmo);
   var mob=window.innerWidth<480;
+
+  // day header row
+  var dhrow=document.createElement('div');dhrow.className='dhrow';
   for(var ci=0;ci<7;ci++){
     var hd=document.createElement('div');
     hd.className='dh'+(ci===0?' sun':ci===6?' sat':'');
-    hd.textContent=DN[ci];g.appendChild(hd);
+    hd.textContent=DN[ci];dhrow.appendChild(hd);
   }
+  g.appendChild(dhrow);
+
+  // Build dateStr array for all 42 cells
+  var cellDates=[];
+  for(var ii=0;ii<42;ii++){
+    var dd,dds,inMM=true,isNN=false;
+    if(ii<first){dd=pd-first+ii+1;var pm2=curM===0?11:curM-1,py2=curM===0?curY-1:curY;dds=py2+'-'+pad(pm2+1)+'-'+pad(dd);inMM=false;}
+    else if(ii-first>=days){dd=ii-first-days+1;dds=nyr+'-'+pad(nmo+1)+'-'+pad(dd);inMM=false;isNN=true;}
+    else{dd=ii-first+1;dds=curY+'-'+pad(curM+1)+'-'+pad(dd);}
+    cellDates.push({d:dd,ds:dds,inM:inMM,isN:isNN});
+  }
+
+  // Collect multi-day events (dateEnd set and > date)
+  var allSrc=vis.concat(vn);
+  var multiEvs=[];
+  var seenKeys={};
+  for(var si=0;si<allSrc.length;si++){
+    var ev=allSrc[si];
+    if(ev.dateEnd&&ev.dateEnd>ev.date&&!seenKeys[ev._key]){
+      seenKeys[ev._key]=true;
+      multiEvs.push(ev);
+    }
+  }
+
+  // For each row, render cells then overlay multi-day chips
   for(var row=0;row<6;row++){
+    var wrow=document.createElement('div');wrow.className='wrow';
+    var rowCells=[];
+
     for(var col=0;col<7;col++){
-      var i=row*7+col;
+      var ci2=row*7+col;
+      var info=cellDates[ci2];
       var cell=document.createElement('div');cell.className='cell';
-      var d,ds,inM=true,isN=false;
-      if(i<first){d=pd-first+i+1;var pm=curM===0?11:curM-1,py=curM===0?curY-1:curY;ds=py+'-'+pad(pm+1)+'-'+pad(d);inM=false;}
-      else if(i-first>=days){d=i-first-days+1;ds=nyr+'-'+pad(nmo+1)+'-'+pad(d);inM=false;isN=true;}
-      else{d=i-first+1;ds=curY+'-'+pad(curM+1)+'-'+pad(d);}
-      if(!inM)cell.classList.add(isN?'nxt':'oth');
-      if(ds===tds)cell.classList.add('tdy');
-      if(cpMode&&cpDates.indexOf(ds)>=0)cell.classList.add('cpsel');
-      var de=document.createElement('div');de.className='cd';de.textContent=d;
+      if(!info.inM)cell.classList.add(info.isN?'nxt':'oth');
+      if(info.ds===tds)cell.classList.add('tdy');
+      if(cpMode&&cpDates.indexOf(info.ds)>=0)cell.classList.add('cpsel');
+
+      var de=document.createElement('div');de.className='cd';de.textContent=info.d;
       if(col===0)de.style.color='#e05a5a';
       else if(col===6)de.style.color='#5b8dee';
-      var hol=getHol(ds);
+      var hol=getHol(info.ds);
       if(hol)de.style.color='#e05a5a';
       cell.appendChild(de);
       if(hol){var he=document.createElement('div');he.className='hn';he.textContent=hol;cell.appendChild(he);}
-      var evt=getEvt(ds);
+      var evt=getEvt(info.ds);
       if(evt){var ee=document.createElement('div');ee.className='en';ee.textContent=evt;cell.appendChild(ee);}
-      (function(dss){cell.onclick=function(){if(cpMode){toggleCp(dss);return;}openDay(dss);};})(ds);
-      var src=isN?vn:vis;
+
+      (function(dss){cell.onclick=function(){if(cpMode){toggleCp(dss);return;}openDay(dss);};})(info.ds);
+
+      // Single-day chips for this cell (skip multi-day events)
+      var src2=info.isN?vn:vis;
       var devs=[];
-      for(var ei=0;ei<src.length;ei++){if(src[ei].date===ds)devs.push(src[ei]);}
+      for(var ei=0;ei<src2.length;ei++){
+        var ev2=src2[ei];
+        if(ev2.date===info.ds&&(!ev2.dateEnd||ev2.dateEnd<=ev2.date))devs.push(ev2);
+      }
       devs.sort(function(a,b){return midx(a.who)-midx(b.who);});
       for(var ei2=0;ei2<devs.length;ei2++){
-        (function(ev){
-          var mem=gmem(ev.who);
+        (function(ev3){
+          var mem=gmem(ev3.who);
           var chip=document.createElement('div');chip.className='chip';
           chip.style.background=mem.light;chip.style.color=mem.color;
           var base=mob?0.55:0.67;
-          var tEl=document.createElement('div');tEl.className='ct';tEl.textContent=ev.title;
-          var len=ev.title.length;
+          var tEl=document.createElement('div');tEl.className='ct';tEl.textContent=ev3.title;
+          var len=ev3.title.length;
           if(len<=6){tEl.classList.add('s');var sc=len<=2?1:len<=3?0.92:len<=4?0.84:len<=5?0.76:0.68;tEl.style.fontSize=(base*sc)+'rem';}
           else{tEl.style.fontSize=(base*(len<=9?0.80:len<=12?0.70:0.60))+'rem';}
           chip.appendChild(tEl);
-          if(ev.timeStart){
-            var ts=ev.timeStart+(ev.timeEnd?'\u2013'+ev.timeEnd:'');
-            var tm=document.createElement('div');tm.className='ctm';tm.textContent=ts;
-            var tb=mob?0.46:0.56,tl=ts.length;
-            tm.style.fontSize=(tb*(tl<=5?1:tl<=8?0.88:tl<=11?0.76:0.65))+'rem';
-            chip.appendChild(tm);
+          if(ev3.timeStart){
+            var ts2=ev3.timeStart+(ev3.timeEnd?'\u2013'+ev3.timeEnd:'');
+            var tm2=document.createElement('div');tm2.className='ctm';tm2.textContent=ts2;
+            var tb=mob?0.46:0.56,tl=ts2.length;
+            tm2.style.fontSize=(tb*(tl<=5?1:tl<=8?0.88:tl<=11?0.76:0.65))+'rem';
+            chip.appendChild(tm2);
           }
-          (function(dss){chip.onclick=function(e){e.stopPropagation();if(cpMode){toggleCp(dss);return;}openDay(dss);};})(ds);
+          (function(dss){chip.onclick=function(e){e.stopPropagation();if(cpMode){toggleCp(dss);return;}openDay(dss);};})(info.ds);
           cell.appendChild(chip);
         })(devs[ei2]);
       }
-      g.appendChild(cell);
+
+      wrow.appendChild(cell);
+      rowCells.push({cell:cell,ds:info.ds,col:col});
     }
+
+    g.appendChild(wrow);
+
+    // After cells are added, overlay multi-day chips for this row
+    // Use setTimeout 0 so cells are in DOM and we can measure widths
+    (function(wr,rCells,rIdx){
+      setTimeout(function(){
+        var gap=mob?3:4;
+        var totalW=wr.offsetWidth;
+        var cellW=(totalW-(6*gap))/7;
+
+        for(var mi=0;mi<multiEvs.length;mi++){
+          var mev=multiEvs[mi];
+          var mem2=gmem(mev.who);
+          // Find which cols in this row overlap with this event
+          var startDs=mev.date, endDs=mev.dateEnd;
+          var startCol=-1,endCol=-1;
+          for(var rc=0;rc<rCells.length;rc++){
+            if(rCells[rc].ds>=startDs&&rCells[rc].ds<=endDs){
+              if(startCol<0)startCol=rc;
+              endCol=rc;
+            }
+          }
+          if(startCol<0)continue;
+
+          // Determine if this is the start of the event in this row
+          var isStart=(rCells[startCol].ds===startDs);
+          var spanCols=endCol-startCol+1;
+
+          var chip2=document.createElement('div');chip2.className='mchip';
+          chip2.style.background=mem2.light;
+          chip2.style.color=mem2.color;
+          // left: startCol * (cellW + gap), width: spanCols * cellW + (spanCols-1)*gap - 4px margin
+          var leftPx=startCol*(cellW+gap)+2;
+          var widthPx=spanCols*cellW+(spanCols-1)*gap-4;
+          chip2.style.left=leftPx+'px';
+          chip2.style.width=widthPx+'px';
+          // Show title only at start col
+          if(isStart){
+            chip2.textContent=mev.title;
+          }else{
+            // continuation: show arrow indicator
+            chip2.textContent='\u25B8 '+mev.title;
+          }
+          chip2.style.fontSize=mob?'0.58rem':'0.65rem';
+          (function(k){chip2.onclick=function(e){e.stopPropagation();openModal(k);};}) (mev._key);
+          wr.appendChild(chip2);
+        }
+      },0);
+    })(wrow,rowCells,row);
   }
   renderUp();
 }
@@ -461,6 +559,7 @@ function openModal(key,pre){
     document.getElementById('mTitle').textContent='\u4E88\u5B9A\u3092\u7DE8\u96C6';
     document.getElementById('fTit').value=ev.title||'';
     document.getElementById('fDt').value=ev.date||'';
+    document.getElementById('fDtEnd').value=ev.dateEnd||'';
     document.getElementById('fTs').value=ev.timeStart||'';
     document.getElementById('fTe').value=ev.timeEnd||'';
     document.getElementById('fRep').value=ev.repeat||'none';
@@ -481,6 +580,7 @@ function openModal(key,pre){
     document.getElementById('mTitle').textContent='\u4E88\u5B9A\u3092\u8FFD\u52A0';
     document.getElementById('fTit').value='';
     document.getElementById('fDt').value=pre||'';
+    document.getElementById('fDtEnd').value='';
     document.getElementById('fTs').value='';document.getElementById('fTe').value='';
     document.getElementById('fRep').value='none';document.getElementById('fMemo').value='';
     selWho='kazoku';
@@ -498,7 +598,7 @@ function doSave(){
   var title=document.getElementById('fTit').value.trim();
   var date=document.getElementById('fDt').value;
   if(!title||!date){alert('\u30BF\u30A4\u30C8\u30EB\u3068\u65E5\u4ED8\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044');return;}
-  var ev={title:title,date:date,timeStart:document.getElementById('fTs').value,timeEnd:document.getElementById('fTe').value,who:selWho,repeat:document.getElementById('fRep').value,memo:document.getElementById('fMemo').value.trim()};
+  var ev={title:title,date:date,dateEnd:document.getElementById('fDtEnd').value,timeStart:document.getElementById('fTs').value,timeEnd:document.getElementById('fTe').value,who:selWho,repeat:document.getElementById('fRep').value,memo:document.getElementById('fMemo').value.trim()};
   if(editKey)ev._key=editKey;
   var op=editKey?'\u7DE8\u96C6':'\u8FFD\u52A0';
   closeModal();fbSave(ev);saveLog(op,title,date);
